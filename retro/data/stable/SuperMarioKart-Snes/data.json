@@ -1,0 +1,24 @@
+{
+    "info": {
+      "finished": {
+        "address": 8265366,
+        "type": "<u2"
+      },
+      "p1_placing": {
+        "address": 8261696,
+        "type": "<u2"
+      },
+      "p1_progress": {
+        "address": 8261824,
+        "type": "<u2"
+      },
+      "p2_placing": {
+        "address": 8261952,
+        "type": "<u2"
+      },
+      "p2_progress": {
+        "address": 8262080,
+        "type": "<u2"
+      }
+    }
+  }
