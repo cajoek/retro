@@ -11,8 +11,7 @@ function get_reward()
     if p2_reward > 0 then
         p2_reward = p2_reward/(data.p2_placing/2 + 1)
     end
-    return {p1_reward, p2_reward}
-    --return p1_reward
+    return p1_reward
 end
     
 
