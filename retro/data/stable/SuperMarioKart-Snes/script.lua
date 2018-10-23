@@ -13,13 +13,20 @@ function get_reward()
     end
     return p1_reward
 end
-    
 
+TIMEOUT = 60*10 -- 10s timeout
+p1_max_progress = data.p1_progress
+p1_progress_timer = TIMEOUT
 function done_check()
-    if data.finished == 0 then
-        return false
+    p1_progress_timer = p1_progress_timer - 1
+    if data.p1_progress > p1_max_progress then
+        p1_max_progress = data.p1_progress
+        p1_progress_timer = TIMEOUT
     end
-    return true
+    if data.finished ~= 0 or p1_progress_timer <= 0 then
+        return true
+    end
+    return false
 end
 
 function sign(x)
