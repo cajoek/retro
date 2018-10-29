@@ -1,16 +1,8 @@
 p1_previous_progress = data.p1_progress
-p2_previous_progress = data.p2_progress
 function get_reward()
     local p1_reward = sign(data.p1_progress - p1_previous_progress)
-    local p2_reward = sign(data.p2_progress - p2_previous_progress)
     p1_previous_progress = data.p1_progress
-    p2_previous_progress = data.p2_progress
-    if p1_reward > 0 then
-        p1_reward = p1_reward/(data.p1_placing/2 + 1)
-    end
-    if p2_reward > 0 then
-        p2_reward = p2_reward/(data.p2_placing/2 + 1)
-    end
+    p1_reward = p1_reward/(data.p1_placing/2 + 1)
     return p1_reward
 end
 
