@@ -1,20 +1,36 @@
 TIMEOUT = 60*15 -- 15s timeout
-
-max_progress = data.p1_progress
-previous_progress = data.p1_progress
 progress_timer = TIMEOUT
-function get_reward()
+
+p0_max_progress = data.p0_progress
+p0_previous_progress = data.p0_progress
+function get_reward0()
     progress_timer = progress_timer - 1
-    if data.p1_progress > max_progress then
-        max_progress = data.p1_progress
-        previous_progress = data.p1_progress
+    if data.p0_progress > p0_max_progress then
+        p0_max_progress = data.p0_progress
+        p0_previous_progress = data.p0_progress
+        progress_timer = TIMEOUT
+        return 1/(data.p0_placing/2 + 1)
+    elseif data.p0_progress < p0_previous_progress then
+        p0_previous_progress = data.p0_progress
+        return -1/(data.p0_placing/2 + 1)
+    end
+    p0_previous_progress = data.p0_progress
+    return 0
+end
+
+p1_max_progress = data.p1_progress
+p1_previous_progress = data.p1_progress
+function get_reward1()
+    if data.p1_progress > p1_max_progress then
+        p1_max_progress = data.p1_progress
+        p1_previous_progress = data.p1_progress
         progress_timer = TIMEOUT
         return 1/(data.p1_placing/2 + 1)
-    elseif data.p1_progress < previous_progress then
-        previous_progress = data.p1_progress
+    elseif data.p1_progress < p1_previous_progress then
+        p1_previous_progress = data.p1_progress
         return -1/(data.p1_placing/2 + 1)
     end
-    previous_progress = data.p1_progress
+    p1_previous_progress = data.p1_progress
     return 0
 end
 

@@ -4,19 +4,19 @@
         "address": 8265366,
         "type": "<u2"
       },
-      "p1_placing": {
+      "p0_placing": {
         "address": 8261696,
         "type": "<u2"
       },
-      "p1_progress": {
+      "p0_progress": {
         "address": 8261824,
         "type": "<u2"
       },
-      "p2_placing": {
+      "p1_placing": {
         "address": 8261952,
         "type": "<u2"
       },
-      "p2_progress": {
+      "p1_progress": {
         "address": 8262080,
         "type": "<u2"
       }

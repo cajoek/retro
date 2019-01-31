@@ -2,9 +2,11 @@
   "done": {
     "script": "lua:done_check"
   },
-  "reward": {
-    "script": "lua:get_reward"
-  },
+  "rewards": [{
+    "script": "lua:get_reward0"
+  },{
+    "script": "lua:get_reward1"
+  }],
   "scripts": [
     "script.lua"
   ]
