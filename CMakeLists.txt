@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.2)
 if(POLICY CMP0048)
     cmake_policy(SET CMP0048 NEW)
 endif()
@@ -18,6 +18,7 @@ endif()
 find_package(PythonInterp REQUIRED)
 
 file(READ "${CMAKE_SOURCE_DIR}/VERSION" PROJECT_VERSION)
+string(REGEX REPLACE "\n$" "" PROJECT_VERSION "${PROJECT_VERSION}")
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "$CMAKE_SOURCE_DIR}/VERSION")
 
 project("Gym Retro" VERSION ${PROJECT_VERSION})
@@ -30,7 +31,7 @@ if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mssse3")
 endif()
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif()
 option(BUILD_TESTS "Should tests be built" ON)
 option(BUILD_UI "Should integration UI be built" OFF)
@@ -60,8 +61,12 @@ if(NOT BUILD_LUAJIT)
     set(LUA_INCLUDE_DIRS "${LUA_INCLUDE_DIR}")
 else()
     set(LUA_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/third-party/luajit/src")
+    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+        set(LUA_FLAGS ${LUA_FLAGS} CC=${CMAKE_C_COMPILER} LDFLAGS=-mmacosx-version-min=10.7)
+        set(LUA_CFLAGS -mmacosx-version-min=10.7)
+    endif()
     if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")
-        set(LUA_FLAGS "CFLAGS=-fPIC -DLUAJIT_ENABLE_GC64")
+        set(LUA_FLAGS ${LUA_FLAGS} "CFLAGS=-fPIC -DLUAJIT_ENABLE_GC64 ${LUA_CFLAGS}")
     endif()
     if(CMAKE_CROSSCOMPILING)
         if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")
@@ -74,6 +79,9 @@ else()
     set(LUA_LIBRARY "${LUA_INCLUDE_DIRS}/libluajit.a")
     add_custom_command(OUTPUT "${LUA_LIBRARY}"
         COMMAND $(MAKE) ${LUA_FLAGS} libluajit.a
+        WORKING_DIRECTORY "${LUA_INCLUDE_DIRS}")
+    add_custom_target(clean-luajit
+        COMMAND $(MAKE) clean
         WORKING_DIRECTORY "${LUA_INCLUDE_DIRS}")
 endif()
 
@@ -129,13 +137,20 @@ function(add_core PLATFORM CORE_NAME)
     if(WIN32)
         set(LIBRETRO_PLATFORM platform=win)
     endif()
+    set(CORE_LDFLAGS "-w ${STATIC_LDFLAGS}")
+    set(CORE_CFLAGS "-w")
+    set(CORE_CXXFLAGS "-w")
     if(WIN32 AND NOT CMAKE_CROSSCOMPILING)
-        set(CORE_LDFLAGS LDFLAGS="-w ${STATIC_LDFLAGS}")
-    else()
-        set(CORE_LDFLAGS "LDFLAGS=-w ${STATIC_LDFLAGS}")
+        set(CORE_LDFLAGS "${CORE_LDFLAGS} ${STATIC_LDFLAGS}")
+    endif()
+    if(NOT WIN32)
+        set(CORE_FPIC_FLAGS "-fPIC")
+    endif()
+    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+        set(CORE_FPIC_FLAGS "${CORE_FPIC_FLAGS} -mmacosx-version-min=10.7 -stdlib=libc++")
     endif()
     add_custom_command(OUTPUT "${TARGET_PATH}"
-        COMMAND CFLAGS=-w CXXFLAGS=-w "${CORE_LDFLAGS}" $(MAKE) -f ${MAKEFILE} CC="${CMAKE_C_COMPILER}" CXX="${CMAKE_CXX_COMPILER}" ${LIBRETRO_PLATFORM}
+        COMMAND ${CMAKE_COMMAND} -E env CFLAGS=${CORE_CFLAGS} CXXFLAGS=${CORE_CXXFLAGS} LDFLAGS=${CORE_LDFLAGS} $(MAKE) -f ${MAKEFILE} CC="${CMAKE_C_COMPILER}" CXX="${CMAKE_CXX_COMPILER}" fpic=${CORE_FPIC_FLAGS} ${LIBRETRO_PLATFORM}
         COMMAND ${CMAKE_COMMAND} -E copy "${CORE_NAME}_libretro*" "${TARGET_PATH}"
         WORKING_DIRECTORY "cores/${PLATFORM}/${SUBDIR}"
         DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/retro/cores/${CORE_NAME}-version")

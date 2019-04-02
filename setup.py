@@ -14,7 +14,7 @@ if not os.path.exists(os.path.join(os.path.dirname(__file__), '.git')):
 else:
     def version_scheme(version):
         with open(VERSION_PATH) as v:
-            version_file = v.read()
+            version_file = v.read().strip()
         if version.distance:
             version_file += '.dev%d' % version.distance
         return version_file
@@ -46,8 +46,7 @@ class CMakeBuild(build_ext):
             try:
                 import cmake
             except ImportError:
-                import pip
-                pip.main(['install', 'cmake'])
+                subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'cmake'])
                 import cmake
             cmake_exe = os.path.join(cmake.CMAKE_BIN_DIR, 'cmake')
         subprocess.check_call([cmake_exe, '.', '-G', 'Unix Makefiles', build_type, pyext_suffix, pylib_dir, python_executable])
@@ -68,23 +67,25 @@ kwargs = {}
 if tuple(int(v) for v in setuptools_version.split('.')) >= (24, 2, 0):
     kwargs['python_requires'] = '>=3.5.0'
 
+
 setup(
     name='gym-retro',
     author='OpenAI',
-    author_email='vickipfau@openai.com',
+    author_email='csh@openai.com',
     url='https://github.com/openai/retro',
-    version=open(VERSION_PATH, 'r').read(),
+    version=open(VERSION_PATH, 'r').read().strip(),
     license='MIT',
-    install_requires=['gym'],
+    install_requires=['gym', 'pyglet>=1.3.2,==1.*'],
     ext_modules=[Extension('retro._retro', ['CMakeLists.txt', 'src/*.cpp'])],
     cmdclass={'build_ext': CMakeBuild},
-    packages=['retro', 'retro.data', 'retro.data.stable', 'retro.data.experimental', 'retro.data.contrib', 'retro.scripts', 'retro.import'],
+    packages=['retro', 'retro.data', 'retro.data.stable', 'retro.data.experimental', 'retro.data.contrib', 'retro.scripts', 'retro.import', 'retro.examples'],
     package_data={
         'retro': ['cores/*.json', 'cores/*_libretro*', 'VERSION.txt', 'README.md', 'LICENSES.md'],
         'retro.data.stable': platform_globs,
         'retro.data.experimental': platform_globs,
         'retro.data.contrib': platform_globs,
     },
+    extras_require={'docs': ['sphinx', 'sphinx_rtd_theme', 'sphinx-autobuild', 'm2r']},
     setup_requires=['setuptools_scm'],
     use_scm_version=use_scm_version,
     **kwargs

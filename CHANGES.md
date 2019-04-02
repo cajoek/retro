@@ -1,9 +1,19 @@
 # Changelog
 
-## 0.6.1
+## 0.7.1
 
+* fix discrete and multi-discrete action space filtering
+
+## 0.7.0
+
+* move some buggy games from the `stable` integrations folder to `experimental`
+* minor bug fixes including fixes to a few game scenarios
+* more docs
 * add ability to use arbitrary additional integration directories
 * integration UI searches for current Python's Gym Retro data directory
+* import script can now accept files in addition to directories
+* you can now use RAM observations by sending `obs_type=retro.Observations.RAM` to `retro.make`
+* update Atari 2600 emulator
 
 ## 0.6.0
 
